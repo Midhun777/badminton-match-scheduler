@@ -5,7 +5,11 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ['"Patrick Hand SC"', 'cursive'],
+      },
+    },
   },
   plugins: [],
 }
