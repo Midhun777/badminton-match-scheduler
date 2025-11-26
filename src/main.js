@@ -4,6 +4,8 @@ import { getStep1HTML, attachStep1Listeners } from './components/Step1.js';
 import { getStep2HTML, attachStep2Listeners } from './components/Step2.js';
 import { getStep3HTML, attachStep3Listeners } from './components/Step3.js';
 import { getScheduleHTML, attachScheduleListeners } from './components/Schedule.js';
+import { getFunFactHTML } from './components/FunFact.js';
+import { getLuckBoosterHTML, attachLuckBoosterListeners } from './components/LuckBooster.js';
 
 const app = document.querySelector('#app');
 
@@ -26,6 +28,12 @@ function render() {
       <main class="max-w-md mx-auto px-4">
         <div id="step-container" class="animate-fade-in">
           ${getStepContent(state)}
+          
+          <!-- Fun Features -->
+          <div class="mt-8 space-y-6">
+            ${getFunFactHTML()}
+            ${getLuckBoosterHTML()}
+          </div>
         </div>
       </main>
     </div>
@@ -42,6 +50,7 @@ function render() {
   }
 
   attachStepListeners(state);
+  attachLuckBoosterListeners();
 }
 
 function getStepContent(state) {
