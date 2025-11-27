@@ -18,8 +18,8 @@ function render() {
       <!-- Header -->
       <header class="glass-panel sticky top-0 z-10 mb-6">
         <div class="max-w-md mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent flex items-center gap-2">
-            <img src="${logoUrl}" alt="Logo" class="h-8 w-8 rounded-full object-cover shadow-sm" />
+          <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent flex items-center gap-3">
+            <img src="${logoUrl}" alt="Logo" class="h-12 w-12 rounded-full object-cover shadow-sm" />
             Padamughal Badminton Club
           </h1>
           ${state.step > 1 ? `<button id="reset-btn" class="text-sm font-medium text-gray-500 hover:text-red-500 transition-colors">Reset</button>` : ''}
