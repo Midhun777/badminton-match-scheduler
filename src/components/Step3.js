@@ -16,6 +16,26 @@ export function getStep3HTML() {
         <p class="text-gray-500 font-medium">Enter names for ${isDoubles ? 'pairs' : 'players'}.</p>
       </div>
 
+      <!-- Quick Add Section -->
+      <div class="glass-panel p-4 rounded-2xl space-y-3">
+        <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider">Quick Add Players</h3>
+        <div class="flex flex-wrap gap-2" id="quick-add-container">
+          ${playerList.map(player => {
+    // Check if player is already selected
+    const isSelected = state.teams.some(t => t.players.includes(player));
+    return `
+              <button type="button" 
+                data-player="${player}" 
+                class="quick-add-btn px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${isSelected ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 hover:scale-105 active:scale-95 border border-blue-100'}"
+                ${isSelected ? 'disabled' : ''}>
+                ${player}
+                ${isSelected ? '<span class="ml-1">✓</span>' : '<span class="ml-1">+</span>'}
+              </button>
+            `;
+  }).join('')}
+        </div>
+      </div>
+
       <form id="teams-form" class="space-y-4">
         ${teamsToRender.map((team, index) => `
           <div class="glass-panel p-5 rounded-2xl relative group transition-all duration-300 hover:shadow-md">
@@ -107,6 +127,31 @@ export function attachStep3Listeners() {
       const index = parseInt(e.currentTarget.dataset.index);
       const newTeams = state.teams.filter((_, i) => i !== index);
       setState({ teams: newTeams, teamCount: newTeams.length });
+    });
+  });
+
+  // Quick Add Logic
+  document.querySelectorAll('.quick-add-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const player = e.currentTarget.dataset.player;
+      const inputs = Array.from(document.querySelectorAll('.player-input'));
+
+      // Find first empty input
+      const emptyInput = inputs.find(input => !input.value.trim());
+
+      if (emptyInput) {
+        emptyInput.value = player;
+        emptyInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+        // Update button state visually (re-render will happen on state change, but for instant feedback)
+        e.currentTarget.classList.remove('bg-blue-50', 'text-blue-600', 'hover:bg-blue-100', 'hover:scale-105', 'active:scale-95', 'border-blue-100');
+        e.currentTarget.classList.add('bg-gray-100', 'text-gray-400', 'cursor-not-allowed');
+        e.currentTarget.disabled = true;
+        e.currentTarget.innerHTML = `${player} <span class="ml-1">✓</span>`;
+      } else {
+        // Optional: Shake animation or toast to indicate no empty slots
+        alert('No empty slots available! Add more teams first.');
+      }
     });
   });
 
