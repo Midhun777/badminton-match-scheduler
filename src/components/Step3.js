@@ -2,12 +2,21 @@ import { setState, getState } from '../state.js';
 import { generateSchedule } from '../logic/scheduler.js';
 import { players as playerList } from '../data/players.js';
 
+const AVATARS = ['🦁', '🐯', '🐻', '🦅', '🦈', '🐉', '🚀', '⚡', '🔥', '🌟', '👑', '🎩', '🕶️', '🦄', '🐼', '🦊', '🐺', '🐗', '🐴', '🦖', '🐙', '🦋', '🐞', '🐢', '🐬'];
+
+const getRandomAvatar = () => AVATARS[Math.floor(Math.random() * AVATARS.length)];
+
 export function getStep3HTML() {
   const state = getState();
   const teamCount = state.teamCount;
   const isDoubles = state.mode === 'doubles';
 
-  const teamsToRender = state.teams.length > 0 ? state.teams : Array.from({ length: teamCount }, (_, i) => ({ id: i, name: '', players: [''] }));
+  const teamsToRender = state.teams.length > 0 ? state.teams : Array.from({ length: teamCount }, (_, i) => ({
+    id: i,
+    name: '',
+    players: [''],
+    avatars: [getRandomAvatar()]
+  }));
 
   return `
     <div class="space-y-8 animate-slide-up">
@@ -52,19 +61,34 @@ export function getStep3HTML() {
             <div class="space-y-3">
               ${isDoubles ? `
                 <div class="grid grid-cols-2 gap-3">
-                  <div class="relative">
-                    <input type="text" name="p1_${index}" placeholder="Player 1" value="${team.players[0] || ''}" autocomplete="off" class="player-input w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-sm transition-all" required>
-                    <div class="suggestions-container absolute z-20 w-full bg-white border border-gray-100 rounded-xl shadow-xl mt-1 max-h-60 overflow-y-auto hidden"></div>
+                  <div class="relative flex items-center gap-2">
+                    <button type="button" data-index="${index}" data-player-idx="0" class="avatar-btn text-2xl hover:scale-110 transition-transform" title="Change Avatar">
+                      ${team.avatars?.[0] || '👤'}
+                    </button>
+                    <div class="relative w-full">
+                      <input type="text" name="p1_${index}" placeholder="Player 1" value="${team.players[0] || ''}" autocomplete="off" class="player-input w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-sm transition-all" required>
+                      <div class="suggestions-container absolute z-20 w-full bg-white border border-gray-100 rounded-xl shadow-xl mt-1 max-h-60 overflow-y-auto hidden"></div>
+                    </div>
                   </div>
-                  <div class="relative">
-                    <input type="text" name="p2_${index}" placeholder="Player 2" value="${team.players[1] || ''}" autocomplete="off" class="player-input w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-sm transition-all" required>
-                    <div class="suggestions-container absolute z-20 w-full bg-white border border-gray-100 rounded-xl shadow-xl mt-1 max-h-60 overflow-y-auto hidden"></div>
+                  <div class="relative flex items-center gap-2">
+                    <button type="button" data-index="${index}" data-player-idx="1" class="avatar-btn text-2xl hover:scale-110 transition-transform" title="Change Avatar">
+                      ${team.avatars?.[1] || '👤'}
+                    </button>
+                    <div class="relative w-full">
+                      <input type="text" name="p2_${index}" placeholder="Player 2" value="${team.players[1] || ''}" autocomplete="off" class="player-input w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-sm transition-all" required>
+                      <div class="suggestions-container absolute z-20 w-full bg-white border border-gray-100 rounded-xl shadow-xl mt-1 max-h-60 overflow-y-auto hidden"></div>
+                    </div>
                   </div>
                 </div>
               ` : `
-                <div class="relative">
-                  <input type="text" name="p1_${index}" placeholder="Player Name" value="${team.players[0] || ''}" autocomplete="off" class="player-input w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all" required>
-                  <div class="suggestions-container absolute z-20 w-full bg-white border border-gray-100 rounded-xl shadow-xl mt-1 max-h-60 overflow-y-auto hidden"></div>
+                <div class="relative flex items-center gap-2">
+                  <button type="button" data-index="${index}" data-player-idx="0" class="avatar-btn text-2xl hover:scale-110 transition-transform" title="Change Avatar">
+                    ${team.avatars?.[0] || '👤'}
+                  </button>
+                  <div class="relative w-full">
+                    <input type="text" name="p1_${index}" placeholder="Player Name" value="${team.players[0] || ''}" autocomplete="off" class="player-input w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all" required>
+                    <div class="suggestions-container absolute z-20 w-full bg-white border border-gray-100 rounded-xl shadow-xl mt-1 max-h-60 overflow-y-auto hidden"></div>
+                  </div>
                 </div>
               `}
               <input type="text" name="team_name_${index}" placeholder="Team Name (Optional)" value="${team.name || ''}" class="w-full px-2 py-2 border-b border-transparent hover:border-gray-200 focus:border-blue-500 focus:outline-none text-sm text-gray-600 bg-transparent transition-colors placeholder-gray-400">
@@ -93,7 +117,12 @@ export function attachStep3Listeners() {
   const state = getState();
 
   if (state.teams.length === 0) {
-    const initialTeams = Array.from({ length: state.teamCount }, (_, i) => ({ id: Date.now() + i, name: '', players: state.mode === 'doubles' ? ['', ''] : [''] }));
+    const initialTeams = Array.from({ length: state.teamCount }, (_, i) => ({
+      id: Date.now() + i,
+      name: '',
+      players: state.mode === 'doubles' ? ['', ''] : [''],
+      avatars: state.mode === 'doubles' ? [getRandomAvatar(), getRandomAvatar()] : [getRandomAvatar()]
+    }));
     setState({ teams: initialTeams });
   }
 
@@ -118,8 +147,35 @@ export function attachStep3Listeners() {
   });
 
   document.getElementById('add-team-btn')?.addEventListener('click', () => {
-    const newTeam = { id: Date.now(), name: '', players: state.mode === 'doubles' ? ['', ''] : [''] };
+    const newTeam = {
+      id: Date.now(),
+      name: '',
+      players: state.mode === 'doubles' ? ['', ''] : [''],
+      avatars: state.mode === 'doubles' ? [getRandomAvatar(), getRandomAvatar()] : [getRandomAvatar()]
+    };
     setState({ teams: [...state.teams, newTeam], teamCount: state.teams.length + 1 });
+  });
+
+  // Avatar Click Logic
+  document.querySelectorAll('.avatar-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const index = parseInt(e.currentTarget.dataset.index);
+      const playerIdx = parseInt(e.currentTarget.dataset.playerIdx);
+      const newTeams = [...state.teams];
+
+      // Cycle avatar
+      const currentAvatar = newTeams[index].avatars[playerIdx];
+      let avatarIdx = AVATARS.indexOf(currentAvatar);
+      avatarIdx = (avatarIdx + 1) % AVATARS.length;
+
+      // Ensure avatars array exists
+      if (!newTeams[index].avatars) {
+        newTeams[index].avatars = state.mode === 'doubles' ? [getRandomAvatar(), getRandomAvatar()] : [getRandomAvatar()];
+      }
+
+      newTeams[index].avatars[playerIdx] = AVATARS[avatarIdx];
+      setState({ teams: newTeams });
+    });
   });
 
   document.querySelectorAll('.remove-team-btn').forEach(btn => {
@@ -222,13 +278,14 @@ export function attachStep3Listeners() {
       const tName = formData.get(`team_name_${index}`)?.trim();
 
       const players = state.mode === 'doubles' ? [p1, p2] : [p1];
+      const avatars = team.avatars || (state.mode === 'doubles' ? [getRandomAvatar(), getRandomAvatar()] : [getRandomAvatar()]);
 
       let name = tName;
       if (!name || name === '') {
         name = players.filter(Boolean).join(' & ');
       }
 
-      return { ...team, name, players };
+      return { ...team, name, players, avatars };
     });
 
     // Validation

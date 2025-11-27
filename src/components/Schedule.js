@@ -1,40 +1,40 @@
 import { setState, getState } from '../state.js';
 
 export function getScheduleHTML() {
-    const state = getState();
-    const matches = state.schedule;
-    const teams = state.teams;
+  const state = getState();
+  const matches = state.schedule;
+  const teams = state.teams;
 
-    const standings = teams.map(team => {
-        let played = 0;
-        let wins = 0;
-        let losses = 0;
-        let points = 0;
+  const standings = teams.map(team => {
+    let played = 0;
+    let wins = 0;
+    let losses = 0;
+    let points = 0;
 
-        matches.forEach(match => {
-            if (match.completed) {
-                if (match.team1.id === team.id || match.team2.id === team.id) {
-                    played++;
-                    const isTeam1 = match.team1.id === team.id;
-                    const myScore = isTeam1 ? parseInt(match.score1) : parseInt(match.score2);
-                    const oppScore = isTeam1 ? parseInt(match.score2) : parseInt(match.score1);
+    matches.forEach(match => {
+      if (match.completed) {
+        if (match.team1.id === team.id || match.team2.id === team.id) {
+          played++;
+          const isTeam1 = match.team1.id === team.id;
+          const myScore = isTeam1 ? parseInt(match.score1) : parseInt(match.score2);
+          const oppScore = isTeam1 ? parseInt(match.score2) : parseInt(match.score1);
 
-                    if (myScore > oppScore) {
-                        wins++;
-                        points += 3;
-                    } else if (myScore < oppScore) {
-                        losses++;
-                    } else {
-                        points += 1;
-                    }
-                }
-            }
-        });
+          if (myScore > oppScore) {
+            wins++;
+            points += 3;
+          } else if (myScore < oppScore) {
+            losses++;
+          } else {
+            points += 1;
+          }
+        }
+      }
+    });
 
-        return { ...team, played, wins, losses, points };
-    }).sort((a, b) => b.points - a.points || b.wins - a.wins);
+    return { ...team, played, wins, losses, points };
+  }).sort((a, b) => b.points - a.points || b.wins - a.wins);
 
-    return `
+  return `
     <div class="space-y-8 animate-slide-up">
       
       <!-- Leaderboard -->
@@ -64,6 +64,7 @@ export function getScheduleHTML() {
                   <td class="px-6 py-3 font-medium text-gray-900 truncate max-w-[140px]">
                     <div class="flex items-center gap-2">
                       ${i === 0 ? '<span class="text-yellow-500">👑</span>' : ''}
+                      <span class="text-lg">${team.avatars ? team.avatars.join('') : '👤'}</span>
                       ${team.name}
                     </div>
                   </td>
@@ -83,12 +84,12 @@ export function getScheduleHTML() {
         <h3 class="text-xl font-bold text-gray-800 px-1">Matches</h3>
         ${matches.length === 0 ? '<p class="text-gray-500 text-center py-8 glass-panel rounded-xl">No matches scheduled.</p>' : ''}
         ${matches.map((match, index) => {
-        const s1 = match.score1 !== null ? parseInt(match.score1) : null;
-        const s2 = match.score2 !== null ? parseInt(match.score2) : null;
-        const isComplete = match.completed;
-        const winner = isComplete ? (s1 > s2 ? 1 : (s2 > s1 ? 2 : 0)) : null;
+    const s1 = match.score1 !== null ? parseInt(match.score1) : null;
+    const s2 = match.score2 !== null ? parseInt(match.score2) : null;
+    const isComplete = match.completed;
+    const winner = isComplete ? (s1 > s2 ? 1 : (s2 > s1 ? 2 : 0)) : null;
 
-        return `
+    return `
           <div class="match-card glass-panel p-5 rounded-2xl ${isComplete ? 'opacity-80 bg-gray-50/50' : ''} transition-all duration-300 hover:shadow-md">
             <div class="flex justify-between items-center mb-4">
               <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Match ${index + 1}</span>
@@ -101,6 +102,7 @@ export function getScheduleHTML() {
               <!-- Team 1 -->
               <div class="flex-1 text-center group">
                 <div class="font-semibold text-sm mb-2 truncate px-1 ${winner === 1 ? 'text-green-600 font-bold' : 'text-gray-900'}" title="${match.team1.name}">
+                  <span class="block text-2xl mb-1">${match.team1.avatars ? match.team1.avatars.join('') : '👤'}</span>
                   ${match.team1.name}
                   ${winner === 1 ? '🏆' : ''}
                 </div>
@@ -113,6 +115,7 @@ export function getScheduleHTML() {
               <!-- Team 2 -->
               <div class="flex-1 text-center group">
                 <div class="font-semibold text-sm mb-2 truncate px-1 ${winner === 2 ? 'text-green-600 font-bold' : 'text-gray-900'}" title="${match.team2.name}">
+                  <span class="block text-2xl mb-1">${match.team2.avatars ? match.team2.avatars.join('') : '👤'}</span>
                   ${match.team2.name}
                   ${winner === 2 ? '🏆' : ''}
                 </div>
@@ -137,45 +140,45 @@ export function getScheduleHTML() {
 }
 
 export function attachScheduleListeners() {
-    const state = getState();
+  const state = getState();
 
-    document.querySelectorAll('.score-input').forEach(input => {
-        input.addEventListener('change', (e) => {
-            const matchId = e.target.dataset.id;
-            const teamNum = e.target.dataset.team;
-            let val = e.target.value;
+  document.querySelectorAll('.score-input').forEach(input => {
+    input.addEventListener('change', (e) => {
+      const matchId = e.target.dataset.id;
+      const teamNum = e.target.dataset.team;
+      let val = e.target.value;
 
-            // Prevent negative scores
-            if (val && parseInt(val) < 0) val = "0";
+      // Prevent negative scores
+      if (val && parseInt(val) < 0) val = "0";
 
-            const newSchedule = state.schedule.map(m => {
-                if (m.id === matchId) {
-                    const updatedMatch = { ...m };
-                    if (teamNum === "1") updatedMatch.score1 = val;
-                    else updatedMatch.score2 = val;
+      const newSchedule = state.schedule.map(m => {
+        if (m.id === matchId) {
+          const updatedMatch = { ...m };
+          if (teamNum === "1") updatedMatch.score1 = val;
+          else updatedMatch.score2 = val;
 
-                    if (updatedMatch.score1 !== '' && updatedMatch.score1 !== null &&
-                        updatedMatch.score2 !== '' && updatedMatch.score2 !== null) {
-                        updatedMatch.completed = true;
-                    } else {
-                        updatedMatch.completed = false;
-                    }
-                    return updatedMatch;
-                }
-                return m;
-            });
+          if (updatedMatch.score1 !== '' && updatedMatch.score1 !== null &&
+            updatedMatch.score2 !== '' && updatedMatch.score2 !== null) {
+            updatedMatch.completed = true;
+          } else {
+            updatedMatch.completed = false;
+          }
+          return updatedMatch;
+        }
+        return m;
+      });
 
-            setState({ schedule: newSchedule });
-        });
+      setState({ schedule: newSchedule });
     });
+  });
 
-    document.getElementById('share-btn')?.addEventListener('click', () => {
-        const text = state.schedule.map(m =>
-            `${m.team1.name} vs ${m.team2.name} ${m.completed ? `(${m.score1}-${m.score2})` : ''}`
-        ).join('\n');
+  document.getElementById('share-btn')?.addEventListener('click', () => {
+    const text = state.schedule.map(m =>
+      `${m.team1.name} vs ${m.team2.name} ${m.completed ? `(${m.score1}-${m.score2})` : ''}`
+    ).join('\n');
 
-        navigator.clipboard.writeText(text).then(() => {
-            alert('Schedule copied to clipboard!');
-        });
+    navigator.clipboard.writeText(text).then(() => {
+      alert('Schedule copied to clipboard!');
     });
+  });
 }
