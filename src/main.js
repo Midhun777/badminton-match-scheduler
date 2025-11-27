@@ -6,6 +6,7 @@ import { getStep3HTML, attachStep3Listeners } from './components/Step3.js';
 import { getScheduleHTML, attachScheduleListeners } from './components/Schedule.js';
 import { getFunFactHTML } from './components/FunFact.js';
 import { getLuckBoosterHTML, attachLuckBoosterListeners } from './components/LuckBooster.js';
+import logoUrl from './imgs/logo.png';
 
 const app = document.querySelector('#app');
 
@@ -18,7 +19,8 @@ function render() {
       <header class="glass-panel sticky top-0 z-10 mb-6">
         <div class="max-w-md mx-auto px-4 py-4 flex justify-between items-center">
           <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent flex items-center gap-2">
-            🏸 Padamughal Badminton Club
+            <img src="${logoUrl}" alt="Logo" class="h-8 w-8 rounded-full object-cover shadow-sm" />
+            Padamughal Badminton Club
           </h1>
           ${state.step > 1 ? `<button id="reset-btn" class="text-sm font-medium text-gray-500 hover:text-red-500 transition-colors">Reset</button>` : ''}
         </div>

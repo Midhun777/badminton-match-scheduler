@@ -1,5 +1,6 @@
 import { setState, getState } from '../state.js';
 import { generateSchedule } from '../logic/scheduler.js';
+import { players as playerList } from '../data/players.js';
 
 export function getStep3HTML() {
   const state = getState();
@@ -31,11 +32,20 @@ export function getStep3HTML() {
             <div class="space-y-3">
               ${isDoubles ? `
                 <div class="grid grid-cols-2 gap-3">
-                  <input type="text" name="p1_${index}" placeholder="Player 1" value="${team.players[0] || ''}" class="w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-sm transition-all" required>
-                  <input type="text" name="p2_${index}" placeholder="Player 2" value="${team.players[1] || ''}" class="w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-sm transition-all" required>
+                  <div class="relative">
+                    <input type="text" name="p1_${index}" placeholder="Player 1" value="${team.players[0] || ''}" autocomplete="off" class="player-input w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-sm transition-all" required>
+                    <div class="suggestions-container absolute z-20 w-full bg-white border border-gray-100 rounded-xl shadow-xl mt-1 max-h-60 overflow-y-auto hidden"></div>
+                  </div>
+                  <div class="relative">
+                    <input type="text" name="p2_${index}" placeholder="Player 2" value="${team.players[1] || ''}" autocomplete="off" class="player-input w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-sm transition-all" required>
+                    <div class="suggestions-container absolute z-20 w-full bg-white border border-gray-100 rounded-xl shadow-xl mt-1 max-h-60 overflow-y-auto hidden"></div>
+                  </div>
                 </div>
               ` : `
-                <input type="text" name="p1_${index}" placeholder="Player Name" value="${team.players[0] || ''}" class="w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all" required>
+                <div class="relative">
+                  <input type="text" name="p1_${index}" placeholder="Player Name" value="${team.players[0] || ''}" autocomplete="off" class="player-input w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all" required>
+                  <div class="suggestions-container absolute z-20 w-full bg-white border border-gray-100 rounded-xl shadow-xl mt-1 max-h-60 overflow-y-auto hidden"></div>
+                </div>
               `}
               <input type="text" name="team_name_${index}" placeholder="Team Name (Optional)" value="${team.name || ''}" class="w-full px-2 py-2 border-b border-transparent hover:border-gray-200 focus:border-blue-500 focus:outline-none text-sm text-gray-600 bg-transparent transition-colors placeholder-gray-400">
             </div>
@@ -97,6 +107,60 @@ export function attachStep3Listeners() {
       const index = parseInt(e.currentTarget.dataset.index);
       const newTeams = state.teams.filter((_, i) => i !== index);
       setState({ teams: newTeams, teamCount: newTeams.length });
+    });
+  });
+
+  // Autocomplete Logic
+  const inputs = document.querySelectorAll('.player-input');
+
+  const closeAllSuggestions = () => {
+    document.querySelectorAll('.suggestions-container').forEach(el => el.classList.add('hidden'));
+  };
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.relative')) {
+      closeAllSuggestions();
+    }
+  });
+
+  inputs.forEach(input => {
+    const container = input.nextElementSibling;
+
+    const showSuggestions = (value) => {
+      const filtered = playerList.filter(p =>
+        p.toLowerCase().includes(value.toLowerCase())
+      );
+
+      if (filtered.length === 0) {
+        container.classList.add('hidden');
+        return;
+      }
+
+      container.innerHTML = filtered.map(player => `
+        <div class="suggestion-item px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 transition-colors">
+          ${player}
+        </div>
+      `).join('');
+
+      container.classList.remove('hidden');
+
+      // Add click listeners to items
+      container.querySelectorAll('.suggestion-item').forEach(item => {
+        item.addEventListener('click', () => {
+          input.value = item.innerText.trim();
+          // Trigger input event to update state
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          closeAllSuggestions();
+        });
+      });
+    };
+
+    input.addEventListener('focus', () => {
+      showSuggestions(input.value);
+    });
+
+    input.addEventListener('input', (e) => {
+      showSuggestions(e.target.value);
     });
   });
 
